@@ -1,29 +1,5 @@
 ---
-- name: "Disable updates"
-  script: files/misc/disable-updates.sh
-
-# TODO: Configure hostname here
-
-- name: 'Installing packages'
-  apt:
-    pkg: "{{ item }}"
-    state: present
-  with_items:
-    - apt-transport-https # TODO: Docker part will install this
-    - ca-certificates # TODO: Docker part will install this
-    - curl 
-    - software-properties-common 
-    - wget 
-    - unzip 
-    - jq 
-    - dnsmasq
-
-# FIXME: Why do we need this?
-- name: 'Create Prometheus user'
-  user:
-    name: prometheus
-    createhome: no
-    state: present
+- include: setup-master-node.yml
 
 - include: docker-install.yml
 
@@ -33,5 +9,6 @@
 
 - include: docker-pull-images.yml
 
-- name: "Run runcmd.sh script #FIXME"
-  script: files/misc/runcmd.sh
+- include: start_micado.yml
+
+- include: docker-login.yml

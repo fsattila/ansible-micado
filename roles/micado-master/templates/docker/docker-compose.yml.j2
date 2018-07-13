@@ -29,7 +29,6 @@ services:
       - "/var/lib/micado/occopus/data/:/var/lib/micado/occopus/data/"
       - "/var/lib/micado/toscasubmitter/src/files/output_configs/:/var/lib/micado/occopus/submitter/"
       - "/var/log/micado/occopus/:/var/log/occopus/"
-
     environment:
       - REDIS_NAME=redis
       - LOG_DIR=/var/log/occopus
@@ -63,7 +62,7 @@ services:
       - 9090:9090
     volumes:
       - "/var/lib/micado/prometheus/config/:/etc/prometheus/"
-      #- "/var/lib/micado/prometheus/data/:/prometheus/"
+      - "/var/lib/micado/prometheus/data/:/prometheus/"
     command: '--config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --web.console.libraries=/usr/share/prometheus/console_libraries --web.console.templates=/usr/share/prometheus/consoles --web.enable-lifecycle'
 
    alertmanager:
@@ -118,6 +117,7 @@ services:
    toscasubmitter:
     image: {{docker_images.toscasubmitter}}
     container_name: toscasubmitter
+    restart: always
     ports:
       - 5050:5050
     command: "-h 0.0.0.0 -p 5050"
