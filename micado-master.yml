@@ -24,13 +24,34 @@
     - micado-master
 
   vars:
+
+    ######################################################################
+    ##### If you want to change the configuration, please edit here. #####
+    ######################################################################
+
+    - cloud_cred_path: ./credentials-cloud-api.yml
+    - docker_cred_path: ./credentials-docker-registry.yml
+    - micado_cred_path: ./credentials-micado.yml
+
+    - disable_worker_updates: True
+    - grafana_admin_pwd: secret
+    - web_listening_port: 443
+
+    - master_hostname: micado-master
+    - worker_hostname: micado-worker
+
+    ##################################################################################
+    ##### Please do not edit under this line unless you know what you are doing. #####
+    ##################################################################################
+
     - docker_compose_pip_version: pip
     - docker_compose_version: 1.16.1
     - docker_images:
         alertmanager: prom/alertmanager:v0.12.0
         cadvisor: google/cadvisor:v0.28.3
         consul: consul:1.0.0
-        dashboard: micado/dashboard:0.1.0
+        credential_manager: micado/credential-manager:0.2.0
+        dashboard: micado/dashboard:0.3.0
         dockervisualizer: micado/dockerviz:min-refresh
         grafana: grafana/grafana:5.1.0
         node_exporter: prom/node-exporter:v0.15.2
@@ -38,10 +59,9 @@
         policykeeper: micado/policykeeper:0.1-dev-frame
         prometheus: prom/prometheus:v2.1.0
         redis: redis:4.0
-        toscasubmitter: micado/toscasubmitter:0.1.1
+        toscasubmitter: micado/toscasubmitter:0.1.8
+        zorp: micado/zorpgpl:6.0.11
     - docker_package: docker-ce=17.09.1~ce-0~ubuntu
     - github_versions:
-        policykeeper: master
-        toscasubmitter: master
-    - grafana_admin_pwd: secret
-    - micado_master_name: micado-master
+        policykeeper: v0.7.0
+        toscasubmitter: v0.7.0

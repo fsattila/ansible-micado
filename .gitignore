@@ -1,4 +1,7 @@
 hosts
 *.retry
-credentials.yml
-docker-cred.yml
+credentials-cloud-api.yml
+credentials-docker-registry.yml
+credentials-micado.yml
+testing/stressng/stressng.yaml
+testing/stressng/_settings

@@ -13,7 +13,7 @@ write_files:
     "server": false,
     "datacenter": "application",
     "data_dir": "/var/consul",
-    "encrypt": "uohStneoKEoVYZIASGp6Nw==",
+    "encrypt": "{{ consul_key.stdout }}",
     "log_level": "INFO",
     "enable_syslog": false,
     "retry_join": ["{{ ansible_default_ipv4.address }}"],
@@ -97,14 +97,12 @@ write_files:
 runcmd:
   - /tmp/wait-updates.sh
   - /bin/consul-set-network.sh
-  - dhclient
+  - IP=`ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | sed 's/\./-/g'`
+  - hostname={{ worker_hostname }}-$IP
   - oldhostname=$(hostname -s)
-  - new_host_name=worker-$(date +%s | sha256sum | base64 | head -c 32 ; echo)
-  - echo $new_host_name > /etc/hostname
-  - hostname -F /etc/hostname
-  - line=127.0.1.1'\t'$new_host_name
-  - sed -i "s/$oldhostname/$new_host_name/g" /etc/hosts
-  - echo $line >> /etc/hosts
+  - sed -i "s/$oldhostname//g" /etc/hosts
+  - sed -i "s/\b127.0.0.1 localhost/127.0.0.1 localhost\\t$hostname/g" /etc/hosts
+  - hostnamectl set-hostname $hostname
   - dpkg-reconfigure openssh-server
   - echo nameserver 8.8.8.8 >> /etc/resolv.conf
   - resolvconf -u
@@ -127,9 +125,19 @@ runcmd:
   - curl -L https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
   - chmod +x /usr/local/bin/docker-compose
 
-  # Connect to Swarm
+  # K8s
 
-  - docker swarm join --token {{ worker_token.stdout }} {{ ansible_default_ipv4.address }}:2377
+  - swapoff -a
+  - curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+  - touch /etc/apt/sources.list.d/kubernetes.list
+  - bash -c 'echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" > /etc/apt/sources.list.d/kubernetes.list'
+  - apt-get update
+  - apt-get install -y kubelet kubeadm
+  - apt-mark hold kubelet kubeadm
+
+  # Connect to cluster
+
+  - {{ join_command.stdout }}
 
   # Infra services start
 
