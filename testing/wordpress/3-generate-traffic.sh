@@ -9,11 +9,6 @@ if [ -z "$MICADO_MASTER" ]; then
   exit
 fi
 
-if [ -z "$APP_ID" ]; then
-  echo "Please, set APP_ID in file named \"$settings_file\"!"
-  exit
-fi
-
 if [ -z "$SSL_USER" ]; then
   echo " Please, set SSL_USER in file named \"$settings_file\"!"
   exit
@@ -24,5 +19,7 @@ if [ -z "$SSL_PASS" ]; then
   exit
 fi
 
-echo "Submitting stressng.yaml to MiCADO at $MICADO_MASTER with appid \"$APP_ID\"..."
-curl --insecure -s -F file=@"stressng.yaml" -F id=$APP_ID -X POST -u "$SSL_USER":"$SSL_PASS" https://$MICADO_MASTER:$MICADO_PORT/toscasubmitter/v1.0/app/launch | jq
+HTTP_PORT=$(curl --insecure -X GET -s -u "$SSL_USER":"$SSL_PASS" https://$MICADO_MASTER:$MICADO_PORT/toscasubmitter/v1.0/list_app | jq ".data[0].outputs.KubernetesAdaptor.$FRONTEND_NAME[0][0].node_port")
+
+echo "Holding 40 active connections for 8 minutes at $MICADO_MASTER:$HTTP_PORT... CTRL-C to stop"
+wrk -t4 -c40 -d8m http://$MICADO_MASTER:$HTTP_PORT
